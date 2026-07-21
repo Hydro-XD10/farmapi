@@ -1,0 +1,11 @@
+from django.contrib import admin
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ['phone_number', 'email', 'is_staff', 'is_active', 'date_joined']
+    search_fields = ['phone_number', 'email']
+    readonly_fields = ['date_joined', 'last_login', 'password']
