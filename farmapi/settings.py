@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 # Defaults to False (fail-safe): a host that forgets to set DJANGO_DEBUG stays secure.
 # Local dev sets DJANGO_DEBUG=True in .env.
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') =='True'
 # Comma-separated hosts from env; localhost defaults are fine for dev.
 # Required to be set (non-empty) once DEBUG is False.
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')

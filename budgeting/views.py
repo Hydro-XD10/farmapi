@@ -3,6 +3,7 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q, Sum
+from decimal import Decimal
 from .models import Category, Transaction
 from .serializers import CategorySerializer, TransactionSerializer
 
@@ -47,12 +48,31 @@ class BudgetSummaryView(APIView):
             qs = qs.filter(farm_id=farm)
         income = qs.filter(type=Transaction.INCOME).aggregate(t=Sum('amount'))['t'] or 0
         expense = qs.filter(type=Transaction.EXPENSE).aggregate(t=Sum('amount'))['t'] or 0
+
+        # Per-category and per-crop breakdowns. Sum(filter=...) puts income and
+        # expense side by side in one grouped query; NULL group = uncategorized /
+        # not tied to a crop.
+        def breakdown(label_field, label_key):
+            rows = (qs.values(label_field)
+                      .annotate(income=Sum('amount', filter=Q(type=Transaction.INCOME)),
+                                expense=Sum('amount', filter=Q(type=Transaction.EXPENSE)))
+                      .order_by(label_field))
+            out = []
+            for r in rows:
+                inc = r['income'] or Decimal('0')
+                exp = r['expense'] or Decimal('0')
+                out.append({label_key: r[label_field], 'income': str(inc),
+                            'expense': str(exp), 'net': str(inc - exp)})
+            return out
+
         # Money as strings, matching how DRF serializes DecimalFields elsewhere
         # (e.g. "150.50") — avoids float precision issues in clients.
         return Response({
             'total_income': str(income),
             'total_expense': str(expense),
             'net': str(income - expense),
+            'by_category': breakdown('category__name', 'category'),
+            'by_crop': breakdown('crop__name', 'crop'),
         })
 
 

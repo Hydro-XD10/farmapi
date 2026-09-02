@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from accounts.views import RegisterView, LogoutView, LoginView
+from accounts.views import RegisterView, LogoutView, LoginView, ProfileView
 
 
 urlpatterns = [
@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/auth/register/', RegisterView.as_view(), name='register'),
     path('api/auth/login/', LoginView.as_view(), name='login'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='refresh'),
+    path('api/auth/me/', ProfileView.as_view(), name='me'),
 
     # --- App resources (all require a valid access token) ---
     path('api/', include('farm.urls')),

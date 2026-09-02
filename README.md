@@ -77,10 +77,4 @@ Access tokens last 15 minutes; refresh tokens 7 days (rotated on use).
 All data is **scoped to the logged-in user** — you only see and modify your own farms
 and everything under them.
 
-## Security notes
-- Secrets are read from environment variables (`.env`, git-ignored) — never committed.
-- Object-level ownership is enforced on read **and** create/update.
-- Request throttling on anonymous (login/register) and authenticated traffic.
-- Production security settings (HTTPS redirect, HSTS, secure cookies) activate when
-  `DJANGO_DEBUG=False`.
 

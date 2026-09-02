@@ -33,7 +33,7 @@ class Transaction(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     farm = models.ForeignKey('farm.Farm', on_delete=models.CASCADE, related_name='transactions')
-    # Deleting a crop/category shouldn't erase financial history — just detach it.
+    # Deleting a crop/category shouldn't erase financial history
     crop = models.ForeignKey('crops.Crop', on_delete=models.SET_NULL,
                              null=True, blank=True, related_name='transactions')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL,

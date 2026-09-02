@@ -5,11 +5,7 @@ from .utils import normalize_phone
 
 
 class UserManager(BaseUserManager):
-    """create_user/create_superuser keyed on phone_number instead of username.
-
-    Required because the default manager insists on a username argument, which
-    this model no longer has.
-    """
+    
     use_in_migrations = True
 
     def create_user(self, phone_number, password=None, **extra_fields):
@@ -17,7 +13,7 @@ class UserManager(BaseUserManager):
         if not phone_number:
             raise ValueError('Phone number is required')
         user = self.model(phone_number=phone_number, **extra_fields)
-        user.set_password(password)   # hashes it — never stored in plain text
+        user.set_password(password)   # hashes it  never stored in plain text
         user.save(using=self._db)
         return user
 
@@ -33,7 +29,7 @@ class User(AbstractUser):
     phone_number = models.CharField(
         max_length=15,
         unique=True,   # the login identifier — must be unique
-        # Arabic/Persian digits are converted to ASCII (normalize_phone) before this
+        # Arabic digits are converted to ASCII (normalize_phone) before this
         # validator runs — \d matches ASCII digits after normalization.
         validators=[RegexValidator(r'^\+?\d{8,15}$',
                                    'Enter a valid phone number, e.g. +9665XXXXXXXX')],
@@ -45,7 +41,7 @@ class User(AbstractUser):
     objects = UserManager()
 
     def save(self, *args, **kwargs):
-        # Canonicalize on every save (admin edits, direct .save(), etc.)
+        # for  every save (admin edits, direct .save(), etc.)
         self.phone_number = normalize_phone(self.phone_number)
         super().save(*args, **kwargs)
 

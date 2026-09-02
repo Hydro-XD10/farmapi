@@ -1,4 +1,7 @@
+from django.db.models import Count, Sum
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Crop, CropBasemap, Plant, PlantAttribute, PlantAttributeValue
 from .serializers import (CropSerializer, CropBasemapSerializer, PlantSerializer,
                           PlantAttributeSerializer, PlantAttributeValueSerializer)
@@ -49,6 +52,28 @@ class PlantViewSet(viewsets.ModelViewSet):
         if crop:
             qs = qs.filter(crop_id=crop)
         return qs
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """GET /api/plants/stats/ — totals for the user's plants: counts and bunch
+        (عذوق) sums, overall and per type. Reuses get_queryset, so it is owner-scoped
+        and honors ?crop=; add ?type= to narrow to one type."""
+        qs = self.get_queryset()
+        type_ = request.query_params.get('type')
+        if type_:
+            qs = qs.filter(type=type_)
+        totals = qs.aggregate(total_plants=Count('id'), total_bunches=Sum('bunch'))
+        by_type = (qs.values('type')
+                     .annotate(plants=Count('id'), bunches=Sum('bunch'))
+                     .order_by('-plants'))
+        return Response({
+            'total_plants': totals['total_plants'],
+            'total_bunches': totals['total_bunches'] or 0,
+            'by_type': [
+                {'type': r['type'], 'plants': r['plants'], 'bunches': r['bunches'] or 0}
+                for r in by_type
+            ],
+        })
 
 
 class PlantAttributeViewSet(viewsets.ModelViewSet):

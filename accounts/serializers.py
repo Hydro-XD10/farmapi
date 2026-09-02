@@ -15,19 +15,35 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['phone_number', 'password', 'email']
+        fields = ['phone_number', 'password', 'email', 'first_name', 'last_name']
+        # KYC-style onboarding: names are required at sign-up (AbstractUser allows
+        # blank by default, so we tighten it here at the API boundary).
+        extra_kwargs = {
+            'first_name': {'required': True, 'allow_blank': False},
+            'last_name': {'required': True, 'allow_blank': False},
+        }
 
     def validate_phone_number(self, value):
-        # Arabic/Persian digits -> ASCII, so what we store is canonical 0-9.
+        # Arabic digits to ASCII, so what we store is canonical 0-9.
         return normalize_phone(value)
 
     def create(self, validated_data):
-        # create_user hashes the password; never store it in plain text
+        
         return User.objects.create_user(
             phone_number=validated_data['phone_number'],
             password=validated_data['password'],
             email=validated_data.get('email', ''),
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
         )
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """The logged-in user's own profile (GET/PATCH /api/auth/me/)."""
+    class Meta:
+        model = User
+        fields = ['phone_number', 'first_name', 'last_name', 'email']
+        read_only_fields = ['phone_number']   # identity never changes via profile
 
 
 class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
