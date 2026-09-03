@@ -1,7 +1,7 @@
 # farmapi — Farm Management API
 
 A **Django REST Framework** backend for a bilingual (**English / Arabic**) farm-management
-mobile app . It serves JSON only. and each phone builds its
+ app . It serves JSON only. and each phone builds its
 own interface on top. Farmers manage their farms, crops, plants (positioned on a map
 image), tasks, and budgeting (income/expenses).
 
